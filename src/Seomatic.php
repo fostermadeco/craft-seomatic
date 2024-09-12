@@ -464,38 +464,13 @@ class Seomatic extends Plugin
         Event::on(
             Elements::class,
             Elements::EVENT_AFTER_SAVE_ELEMENT,
-            function (ElementEvent $event) {
-                Craft::debug(
-                    'Elements::EVENT_AFTER_SAVE_ELEMENT',
-                    __METHOD__
-                );
-                /** @var  $element Element */
-                $element = $event->element;
-                self::$plugin->metaBundles->invalidateMetaBundleByElement(
-                    $element,
-                    $event->isNew
-                );
-                if ($event->isNew) {
-                    self::$plugin->sitemaps->submitSitemapForElement($element);
-                }
-            }
+            [$this, 'afterSaveElement']
         );
         // Handler: Elements::EVENT_AFTER_DELETE_ELEMENT
         Event::on(
             Elements::class,
             Elements::EVENT_AFTER_DELETE_ELEMENT,
-            function (ElementEvent $event) {
-                Craft::debug(
-                    'Elements::EVENT_AFTER_DELETE_ELEMENT',
-                    __METHOD__
-                );
-                /** @var  $element Element */
-                $element = $event->element;
-                self::$plugin->metaBundles->invalidateMetaBundleByElement(
-                    $element,
-                    false
-                );
-            }
+            [$this, 'afterDeleteElement']
         );
         // Add social media preview targets on Craft 3.2 or later
         if (self::$craft32 && Seomatic::$settings->socialMediaPreviewTarget) {
@@ -1140,5 +1115,36 @@ class Seomatic extends Plugin
     protected function createSettingsModel()
     {
         return new Settings();
+    }
+
+    public function afterSaveElement(ElementEvent $event)
+    {
+        Craft::debug(
+            'Elements::EVENT_AFTER_SAVE_ELEMENT',
+            __METHOD__
+        );
+        /** @var  $element Element */
+        $element = $event->element;
+        self::$plugin->metaBundles->invalidateMetaBundleByElement(
+            $element,
+            $event->isNew
+        );
+        if ($event->isNew) {
+            self::$plugin->sitemaps->submitSitemapForElement($element);
+        }
+    }
+
+    public function afterDeleteElement(ElementEvent $event)
+    {
+        Craft::debug(
+            'Elements::EVENT_AFTER_DELETE_ELEMENT',
+            __METHOD__
+        );
+        /** @var  $element Element */
+        $element = $event->element;
+        self::$plugin->metaBundles->invalidateMetaBundleByElement(
+            $element,
+            false
+        );
     }
 }
